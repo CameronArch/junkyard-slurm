@@ -82,7 +82,7 @@ _build_rootfs debootstrap_release root_password hostname size:
       --arch=arm64 {{ debootstrap_release }} \
       --include="locales apt-utils eatmydata {{ _apt_packages }}" \
       --hook-dir=/usr/share/mmdebstrap/hooks/eatmydata \
-      --include="/tmp/kmscon_9.0.0-5+b2_arm64.deb" \
+      --include="/tmp/kmscon_9.0.0-4_arm64.deb" \
       --hook-dir=/usr/share/mmdebstrap/hooks/file-mirror-automount \
       --customize-hook='tar-in {{ _kernel_tar }} /' \
       --customize-hook='echo {{ hostname }} > "$1/etc/hostname"' \
