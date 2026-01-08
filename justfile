@@ -76,7 +76,7 @@ clean_rootfs:
 [working-directory('rootfs')]
 _build_rootfs debootstrap_release root_password hostname size:
     # why does debian have this one package in everything BUT trixie...
-    eatmydata wget -P /tmp 'http://ftp.debian.org/debian/pool/main/k/kmscon/kmscon_9.0.0-5+b2_arm64.deb'
+    eatmydata wget -P /tmp 'http://ftp.us.debian.org/debian/pool/main/k/kmscon/kmscon_9.0.0-4_arm64.deb'
     sudo DEBIAN_FRONTEND=noninteractive eatmydata mmdebstrap \
       --variant=standard \
       --arch=arm64 {{ debootstrap_release }} \
