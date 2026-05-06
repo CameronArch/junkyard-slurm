@@ -101,6 +101,12 @@ _build_rootfs debootstrap_release root_password hostname size:
       --customize-hook='mkdir -p "$1/etc/systemd/system/kmsconvt@.service.d" && printf "[Service]\nExecStart=\nExecStart=/usr/bin/kmscon \"--vt=%%I\" --seats=seat0 --no-switchvt --login -- /sbin/agetty -a kalm - xterm-256color\n" > "$1/etc/systemd/system/kmsconvt@.service.d/override.conf"' \
       --customize-hook='mkdir -p "$1/etc/systemd/system/adbd.service.d" && printf "[Unit]\nWants=sys-kernel-config.mount\nAfter=\n\n[Service]\nSocketBindDeny=tcp:5555\n" > "$1/etc/systemd/system/adbd.service.d/override.conf"' \
       --customize-hook='ln -s /dev/null "$1/etc/systemd/system/systemd-backlight@.service"' \
+      
+      --customize-hook='mkdir -p "$1/usr/lib/dracut/modules.d/90abroot" "$1/etc/dracut.conf.d"' \
+      --customize-hook='cp -a ../external/abroot/90abroot/. "$1/usr/lib/dracut/modules.d/90abroot/"' \
+      --customize-hook='cp ../external/abroot/90-abroot.conf "$1/etc/dracut.conf.d/90-abroot.conf"' \
+      --customize-hook='chmod +x "$1/usr/lib/dracut/modules.d/90abroot/"*.sh' \
+      
       --customize-hook='chroot "$1" dracut --kver {{ _kernel_version }} --show-modules --force' \
       {{ _sysroot_dir }}
 
@@ -218,7 +224,7 @@ _create_rootfs_image size="4GiB":
 build_boot_images: 
     sudo eatmydata {{ _mkbootimg }} \
       --kernel {{ _sysroot_dir }}/boot/vmlinuz-{{ _kernel_version }} \
-      --cmdline "root=/dev/disk/by-partlabel/super" \
+      --cmdline "root=/dev/sda31 rootfstype=btrfs abroot=B rd.debug rd.shell rd.break=pre-mount" \
       --header_version 4 \
       -o boot.img \
       --pagesize 2048 \
