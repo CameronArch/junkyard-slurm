@@ -1,9 +1,6 @@
 [submodule "tools/mkbootimg"]
 	path = tools/mkbootimg
 	url = https://android.googlesource.com/platform/system/tools/mkbootimg
-[submodule "OTA-Updates"]
-	path = OTA-Updates
-	url = https://github.com/junkyard-computing/OTA-Updates
 [submodule "external/abroot"]
 	path = external/abroot
 	url = https://github.com/junkyard-computing/OTA-Updates
