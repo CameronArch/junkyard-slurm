@@ -106,7 +106,7 @@ _build_rootfs debootstrap_release root_password hostname size:
       --customize-hook='cp -a ../external/abroot/90abroot/. "$1/usr/lib/dracut/modules.d/90abroot/"' \
       --customize-hook='cp ../external/abroot/90-abroot.conf "$1/etc/dracut.conf.d/90-abroot.conf"' \
       --customize-hook='chmod +x "$1/usr/lib/dracut/modules.d/90abroot/"*.sh' \
-      
+
       --customize-hook='chroot "$1" dracut --kver {{ _kernel_version }} --show-modules --force' \
       {{ _sysroot_dir }}
 
