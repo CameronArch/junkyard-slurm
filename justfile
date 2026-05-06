@@ -222,7 +222,7 @@ _create_rootfs_image size="4GiB":
 build_boot_images: 
     sudo eatmydata {{ _mkbootimg }} \
       --kernel {{ _sysroot_dir }}/boot/vmlinuz-{{ _kernel_version }} \
-      --cmdline "root=/dev/sda31 rootfstype=btrfs abroot=B rd.debug rd.shell rd.break=pre-mount" \
+      --cmdline "root=/dev/sda31 rootfstype=btrfs abroot=B rd.debug rd.shell" \
       --header_version 4 \
       -o boot.img \
       --pagesize 2048 \
