@@ -38,7 +38,30 @@ BEGIN {
 }
 
 /^Options=/ {
-    print "Options=subvol=" subvol
+    opts = $0
+    sub(/^Options=/, "", opts)
+
+    # Remove any existing subvol=... option from the comma-separated list.
+    n = split(opts, parts, ",")
+    newopts = ""
+
+    for (i = 1; i <= n; i++) {
+        if (parts[i] !~ /^subvol=/ && parts[i] != "") {
+            if (newopts != "") {
+                newopts = newopts "," parts[i]
+            } else {
+                newopts = parts[i]
+            }
+        }
+    }
+
+    if (newopts != "") {
+        newopts = newopts ",subvol=" subvol
+    } else {
+        newopts = "subvol=" subvol
+    }
+
+    print "Options=" newopts
     done = 1
     next
 }
