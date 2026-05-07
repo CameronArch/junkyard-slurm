@@ -21,8 +21,6 @@ case "$subvol" in
 esac
 
 unit="/run/systemd/generator/sysroot.mount"
-dropin_dir="/run/systemd/generator/sysroot.mount.d"
-dropin="$dropin_dir/90-abroot.conf"
 
 info "abroot: patching sysroot mount to use btrfs subvolume $subvol"
 
@@ -32,29 +30,33 @@ if [ ! -f "$unit" ]; then
     exit 0
 fi
 
-mkdir -p "$dropin_dir"
+tmp="${unit}.tmp"
 
-cat > "$dropin" <<EOF
+awk -v subvol="$subvol" '
+BEGIN {
+    done = 0
+}
 
-[Mount]
-options=subvol=$subvol
-EOF
+/^Options=/ {
+    print "Options=subvol=" subvol
+    done = 1
+    next
+}
 
-info "abroot: wrote $dropin:"
-info "abroot: Options=subvol=$subvol"
+{
+    print
+}
+
+END {
+    if (!done) {
+        print "Options=subvol=" subvol
+    }
+}
+' "$unit" > "$tmp" && mv "$tmp" "$unit"
 
 
-# Debug output.
-if [ -f "$unit" ]; then
-    info "abroot: current generated sysroot.mount:"
-    while read -r line; do
-        info "abroot: sysroot.mount: $line"
-    done < "$unit"
-fi
-
-if [ -f "$dropin" ]; then
-    info "abroot: current abroot drop-in:"
-    while read -r line; do
-        info "abroot: drop-in: $line"
-    done < "$dropin"
-fi
+# Debug output
+info "abroot: final sysroot.mount after patch:"
+while read -r line; do
+    info "abroot: sysroot.mount: $line"
+done < "$unit"
