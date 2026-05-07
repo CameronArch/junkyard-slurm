@@ -43,9 +43,6 @@ EOF
 info "abroot: wrote $dropin:"
 info "abroot: Options=subvol=$subvol"
 
-if command -v systemctl >/dev/null 2>&1; then
-    systemctl daemon-reload || warn "abroot: systemctl daemon-reload failed"
-fi
 
 # Debug output.
 if [ -f "$unit" ]; then
