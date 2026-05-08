@@ -21,65 +21,43 @@ case "$subvol" in
 esac
 
 unit="/run/systemd/generator/sysroot.mount"
+dropin_dir="/run/systemd/system/sysroot.mount.d"
+dropin="$dropin_dir/90-abroot.conf"
 
-info "abroot: patching sysroot mount to use btrfs subvolume $subvol"
+info "abroot: creating runtime systemd override for sysroot.mount"
+info "abroot: selected btrfs subvolume $subvol"
 
 if [ ! -f "$unit" ]; then
-    warn "abroot: $unit does not exist"
-    warn "abroot: cannot patch sysroot mount"
-    exit 0
+    warn "abroot: generated sysroot.mount does not exist yet"
+    warn "abroot: writing runtime drop-in anyway"
+else
+    info "abroot: generated sysroot.mount exists"
 fi
 
-tmp="${unit}.tmp"
+mkdir -p "$dropin_dir"
 
-awk -v subvol="$subvol" '
-BEGIN {
-    done = 0
-}
+cat > "$dropin" <<EOF
+[Mount]
+Options=subvol=$subvol
+EOF
 
-/^Options=/ {
-    opts = $0
-    sub(/^Options=/, "", opts)
-
-    # Remove any existing subvol=... option from the comma-separated list.
-    n = split(opts, parts, ",")
-    newopts = ""
-
-    for (i = 1; i <= n; i++) {
-        if (parts[i] !~ /^subvol=/ && parts[i] != "") {
-            if (newopts != "") {
-                newopts = newopts "," parts[i]
-            } else {
-                newopts = parts[i]
-            }
-        }
-    }
-
-    if (newopts != "") {
-        newopts = newopts ",subvol=" subvol
-    } else {
-        newopts = "subvol=" subvol
-    }
-
-    print "Options=" newopts
-    done = 1
-    next
-}
-
-{
-    print
-}
-
-END {
-    if (!done) {
-        print "Options=subvol=" subvol
-    }
-}
-' "$unit" > "$tmp" && mv "$tmp" "$unit"
-
-
-# Debug output
-info "abroot: final sysroot.mount after patch:"
+info "abroot: wrote runtime drop-in $dropin"
+info "abroot: drop-in contents:"
 while read -r line; do
-    info "abroot: sysroot.mount: $line"
-done < "$unit"
+    info "abroot: drop-in: $line"
+done < "$dropin"
+
+if [ -f "$unit" ]; then
+    info "abroot: generated sysroot.mount before daemon-reload:"
+    while read -r line; do
+        info "abroot: sysroot.mount: $line"
+    done < "$unit"
+fi
+
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload || warn "abroot: systemctl daemon-reload failed"
+else
+    warn "abroot: systemctl not found, cannot daemon-reload"
+fi
+
+info "abroot: finished runtime override setup"
