@@ -37,7 +37,7 @@ check_recently_loaded() {
     if [ "$recently_loaded" = "true" ]; then
         echo "abroot: selected btrfs subvolume $subvol was recently loaded, checking boot attempts"
         boot_attempts=$(jq -r ".rootfs$subvol.boot_attempts" "$STATE")
-        if [ "$boot_attempts" -gt "$MAX_BOOT_ATTEMPTS" ]; then
+        if [ "$boot_attempts" -ge "$MAX_BOOT_ATTEMPTS" ]; then
             warn "abroot: selected btrfs subvolume $subvol has $boot_attempts boot attempts, marking unbootable and switching back to the other subvolume"
 
             json_write ".rootfs$subvol.unbootable = true"
