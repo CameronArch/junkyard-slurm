@@ -84,6 +84,6 @@ jq ".active_root = \"$subvol\"" /run/abroot/userdata/.abroot/boot-state.json \
     /run/abroot/userdata/.abroot/boot-state.json
     
 sync
-echo "$subvol" > /run/abroot.subvol
+echo "rootfs$subvol" > /run/abroot.subvol
 
 info "abroot: selected btrfs subvolume $subvol"
