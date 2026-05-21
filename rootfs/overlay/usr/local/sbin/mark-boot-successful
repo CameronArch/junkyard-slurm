@@ -1,0 +1,63 @@
+#!/bin/sh
+set -eu
+
+DEVINFO="/dev/disk/by-partlabel/devinfo"
+PIXEL_DEVINFO="/usr/local/bin/pixel-devinfo"
+
+STATE="/userdata/.abroot/boot-state.json"
+TMP="/userdata/.abroot/tmp.json"
+
+log() {
+    echo "[boot-success] $*" > /dev/kmsg
+}
+
+log "starting"
+
+if [ ! -e "$DEVINFO" ]; then
+    log "ERROR: devinfo partition not found"
+    exit 1
+fi
+
+if [ ! -x "$PIXEL_DEVINFO" ]; then
+    log "ERROR: pixel-devinfo not found or not executable at $PIXEL_DEVINFO"
+    exit 1
+fi
+
+if [ ! -f "$STATE" ]; then
+    log "ERROR: boot-state.json not found at $STATE"
+    exit 1
+fi
+
+active_root="$(jq -r '.active_root' "$STATE")"
+
+if [ "$active_root" != "A" ] && [ "$active_root" != "B" ]; then
+    log "ERROR: invalid active_root value: $active_root"
+    exit 1
+fi
+
+log "active_root is rootfs$active_root"
+
+log "before Pixel devinfo update:"
+"$PIXEL_DEVINFO" "$DEVINFO" || true
+
+"$PIXEL_DEVINFO" --successful true --unbootable false "$DEVINFO" "$DEVINFO"
+sync
+
+log "after Pixel devinfo update:"
+"$PIXEL_DEVINFO" "$DEVINFO" || true
+
+log "updating boot-state.json for rootfs$active_root"
+
+jq \
+    ".rootfs$active_root.boot_successful = true |
+     .rootfs$active_root.recently_loaded = false |
+     .rootfs$active_root.unbootable = false" \
+    "$STATE" > "$TMP"
+
+mv "$TMP" "$STATE"
+sync
+
+log "boot-state.json updated for rootfs$active_root"
+log "done"
+
+# Disclosure: ChatGPT was used to aid in script configuration

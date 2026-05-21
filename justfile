@@ -107,6 +107,10 @@ _build_rootfs debootstrap_release root_password hostname size:
       --customize-hook='chmod +x "$1/usr/lib/dracut/modules.d/90abroot/"*.sh' \
       --customize-hook='chroot "$1" eatmydata apt-get update' \
       --customize-hook='chroot "$1" eatmydata apt-get install -y jq' \
+      --customize-hook='if [ -d overlay ]; then cp -a overlay/. "$1/"; fi' \
+      --customize-hook='if [ -f "$1/usr/local/bin/pixel-devinfo" ]; then chmod 755 "$1/usr/local/bin/pixel-devinfo"; fi' \
+      --customize-hook='if [ -f "$1/usr/local/sbin/mark-boot-successful" ]; then chmod 755 "$1/usr/local/sbin/mark-boot-successful"; fi' \
+      --customize-hook='if [ -f "$1/etc/systemd/system/mark-boot-successful.service" ]; then chroot "$1" systemctl enable mark-boot-successful.service; fi' \
       --customize-hook='chroot "$1" dracut --kver {{ _kernel_version }} --show-modules --force' \
       {{ _sysroot_dir }}
 
