@@ -108,14 +108,14 @@ run_setup() {
     "recent_version": null,
     "rootfsA": {
         "version": null,
-        "recently_loaded": true,
+        "recently_loaded": false,
         "boot_attempts": 0,
         "boot_successful": false,
         "unbootable": false
     },
     "rootfsB": {
         "version": null,
-        "recently_loaded": true,
+        "recently_loaded": false,
         "boot_attempts": 0,
         "boot_successful": false,
         "unbootable": false
