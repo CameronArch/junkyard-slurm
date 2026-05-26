@@ -105,6 +105,7 @@ run_setup() {
     if ! cat > "$MNT_DST/$STATE_FILE" << 'EOF'
 {
     "active_root": "A",
+    "version": "2026.05.25",
     "rootfsA": {
         "recently_loaded": true,
         "boot_attempts": 0,

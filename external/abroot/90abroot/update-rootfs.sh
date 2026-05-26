@@ -1,14 +1,14 @@
 #!/bin/sh
 
-STATE=/run/abroot/userdata/.abroot/boot-state.json
-TMP=/run/abroot/userdata/.abroot/tmp.json
+MOUNT_SRC="/run/abroot/superroot"
+MOUNT_DST="/run/abroot/newroot"
 
 DEVICE_SRC="/dev/sda30"
 DEVICE_DST="/dev/sda31"
 SNAP_NAME=".snap_for_send"
 
-MOUNT_SRC="/run/superroot"
-MOUNT_DST="/run/newroot"
+STATE=$MOUNT_DST/userdata/.abroot/boot-state.json
+TMP=$MOUNT_DST/userdata/.abroot/tmp.json
 
 # Write to json file at given parameter, using $STATE and $TMP as the source and destination
 json_write() {
@@ -50,29 +50,12 @@ execute_update() {
     subvol=$(get_inactive_subvol)
     TARGET_SUBVOL=rootfs$subvol
 
-    _cleanup_execute() {
-        umount "$MOUNT_SRC" 2>/dev/null || true
-        umount "$MOUNT_DST" 2>/dev/null || true
-    }
-    trap _cleanup_execute EXIT INT TERM
-
     echo "abroot: updating inactive slot $TARGET_SUBVOL"
 
     json_write ".$TARGET_SUBVOL.recently_loaded = true"
     json_write ".$TARGET_SUBVOL.boot_attempts = 0"
     json_write ".$TARGET_SUBVOL.boot_successful = false"
     json_write ".$TARGET_SUBVOL.unbootable = false"
-    json_write ".pending_version = \"$image_version\""
-
-    # Perform update
-    mkdir -p "$MOUNT_SRC"
-    mkdir -p "$MOUNT_DST"
-
-    echo "abroot: mounting super root"
-    mount "$DEVICE_SRC" "$MOUNT_SRC"
-
-    echo "abroot: mounting userdata root"
-    mount "$DEVICE_DST" "$MOUNT_DST"
 
     echo "abroot: removing old $TARGET_SUBVOL if exists"
     if btrfs subvolume show "$MOUNT_DST/$TARGET_SUBVOL" >/dev/null 2>&1; then
@@ -119,30 +102,24 @@ execute_update() {
     echo "abroot: final subvolume layout:"
     btrfs subvolume list "$MOUNT_DST"
 
-    echo "abroot: unmounting"
-    umount "$MOUNT_SRC"
-    umount "$MOUNT_DST"
-
-    trap - EXIT INT TERM
-
-    # Update version flag
+    # Update version flag and switch to new root
     json_write ".version = \"$image_version\""
+    json_write ".active_root = \"$subvol\""
 
     echo "abroot: update complete -> $TARGET_SUBVOL now at $image_version"
 }
 
-_cleanup_version_check() {
-    umount "$MOUNT_SRC" 2>/dev/null || true
-}
-trap _cleanup_version_check EXIT INT TERM
-
-echo "abroot: mounting super root for version check"
+# MOUNT 1: super partition
 mkdir -p "$MOUNT_SRC"
+echo "abroot: mounting super partition"
 mount "$DEVICE_SRC" "$MOUNT_SRC"
-image_version=$(cat "$MOUNT_SRC/etc/rootfs-version")
-umount "$MOUNT_SRC"
 
-trap - EXIT INT TERM
+# MOUNT 2: user partition
+mkdir -p "$MOUNT_DST"
+echo "abroot: mounting user partition"
+mount "$DEVICE_DST" "$MOUNT_DST"
+
+image_version=$(cat "$MOUNT_SRC/etc/rootfs-version")
 
 if needs_update; then
     execute_update "$image_version"
