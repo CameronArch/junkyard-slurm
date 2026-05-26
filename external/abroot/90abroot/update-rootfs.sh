@@ -16,7 +16,7 @@ json_write() {
 }
 
 needs_update() {
-    deployed_version=$(jq -r '.version' "$STATE")
+    deployed_version=$(jq -r '.recent_version' "$STATE")
 
     [ "$image_version" != "$deployed_version" ]
 }
@@ -103,7 +103,8 @@ execute_update() {
     btrfs subvolume list "$MOUNT_DST"
 
     # Update version flag and switch to new root
-    json_write ".version = \"$image_version\""
+    json_write ".recent_version = \"$image_version\""
+    json_write ".$TARGET_SUBVOL.version = \"$image_version\""
     json_write ".active_root = \"$subvol\""
 
     echo "abroot: update complete -> $TARGET_SUBVOL now at $image_version"
