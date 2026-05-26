@@ -118,7 +118,7 @@ run_setup() {
         "unbootable": false
     }
 }
-EOF 
+EOF
     then
         echo "abroot: failed to create state file $STATE_FILE, cannot continue setup"
         umount "$MNT_DST"
