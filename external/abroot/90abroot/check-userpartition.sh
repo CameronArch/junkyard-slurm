@@ -58,8 +58,7 @@ run_setup() {
         return 1
     fi
 
-    if
-        btrfs filesystem show "$DEVICE_SRC" 2>/dev/null | grep -q "$DEVICE_DST"; then
+    if btrfs filesystem show "$DEVICE_SRC" 2>/dev/null | grep -q "$DEVICE_DST"; then
         echo "$DEVICE_DST is in the pool, removing..."
         btrfs device remove "$DEVICE_DST" "$MNT_SRC" || {
             echo "abroot: failed to remove $DEVICE_DST from pool, cannot continue setup"
