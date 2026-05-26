@@ -8,7 +8,8 @@ LABEL="rootpool"
 MNT_SRC="/run/abroot/setup/src"
 MNT_DST="/run/abroot/setup/dst"
 SNAP_NAME=".snap_for_send"
-STATE_FILE="userdata/.abroot/boot-state.json"
+STATE_FILE_DIR="userdata/.abroot"
+STATE_FILE="$STATE_FILE_DIR/boot-state.json"
 
 # Defined functions
 
@@ -35,7 +36,7 @@ check_setup() {
         fi
     done
 
-    if [ ! -f "$MNT_DST/$STATE_FILE" ]; then
+    if [ ! -s "$MNT_DST/$STATE_FILE" ]; then
         echo "abroot: $DEVICE_DST is missing required state file $STATE_FILE, needs setup"
         umount "$MNT_DST"
         return 1
@@ -90,13 +91,18 @@ run_setup() {
         if btrfs subvolume list "$MNT_DST" | grep -q "$subvol"; then
             echo "$subvol already exists"
         else
-            btrfs subvolume create "$MNT_DST/$subvol"
+            if ! btrfs subvolume create "$MNT_DST/$subvol"; then
+                echo "abroot: failed to create subvolume $subvol, cannot continue setup"
+                umount "$MNT_DST"
+                umount "$MNT_SRC"
+                return 1
+            fi
         fi
     done
 
     echo "==> Creating state file $STATE_FILE"
-    mkdir -p "$(dirname "$MNT_DST/$STATE_FILE")"
-    cat > "$MNT_DST/$STATE_FILE" << 'EOF'
+    mkdir -p "$MNT_DST/$STATE_FILE_DIR"
+    if ! cat > "$MNT_DST/$STATE_FILE" << 'EOF'
 {
     "active_root": "A",
     "rootfsA": {
@@ -112,7 +118,14 @@ run_setup() {
         "unbootable": false
     }
 }
-EOF
+EOF 
+    then
+        echo "abroot: failed to create state file $STATE_FILE, cannot continue setup"
+        umount "$MNT_DST"
+        umount "$MNT_SRC"
+        return 1
+    fi
+    
     echo "boot-state.json created"
 
     echo "==> Creating read-only snapshot of live root for send"
