@@ -1,0 +1,11 @@
+[Unit]
+Description=Mark Pixel A/B slot boot successful
+After=multi-user.target
+ConditionPathExists=/dev/disk/by-partlabel/devinfo
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mark-boot-successful
+
+[Install]
+WantedBy=multi-user.target
