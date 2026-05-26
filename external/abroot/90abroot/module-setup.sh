@@ -16,7 +16,8 @@ install() {
     inst_binary btrfs
     inst_binary blkid
     inst_binary sed
-    inst_hook pre-mount 80 "$moddir/check-userpartition.sh" # 80 priority to run before 90-abroot-select runs
+    # inst_hook pre-mount 80 "$moddir/check-userpartition.sh" # 80 priority to run before 90-abroot-select runs
+    inst_hook pre-mount 83 "$moddir/update-rootfs.sh"
     inst_hook pre-mount 85 "$moddir/select-abroot.sh" # 85 priority to run before 90-abroot-mount runs
     inst_hook pre-mount 90 "$moddir/patch-sysroot-mount.sh" # 90 priority to run before sysroot-mount runs
 }
