@@ -105,13 +105,16 @@ run_setup() {
     if ! cat > "$MNT_DST/$STATE_FILE" << 'EOF'
 {
     "active_root": "A",
+    "recent_version": null,
     "rootfsA": {
+        "version": null,
         "recently_loaded": true,
         "boot_attempts": 0,
         "boot_successful": false,
         "unbootable": false
     },
     "rootfsB": {
+        "version": null,
         "recently_loaded": true,
         "boot_attempts": 0,
         "boot_successful": false,

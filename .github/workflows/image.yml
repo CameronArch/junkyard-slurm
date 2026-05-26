@@ -57,6 +57,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Build image
         run: |
+          echo "$(date +%Y.%m.%d)-${{ github.run_number }}" > rootfs/overlay/etc/rootfs-version
           eatmydata just create_rootfs_image
           eatmydata just build_rootfs
           eatmydata just build_boot_images
