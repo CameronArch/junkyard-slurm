@@ -1,5 +1,7 @@
 #!/bin/sh
 
+command -v die >/dev/null 2>&1 || . /lib/dracut-lib.sh
+
 DEVICE_SRC="/dev/sda30"
 DEVICE_DST="/dev/sda31"
 LABEL="rootpool"
@@ -70,7 +72,7 @@ run_setup() {
     fi
 
     echo "==> Formatting $DEVICE_DST as independent btrfs (label: $LABEL)"
-    if ! mkfs.btrfs -L "$LABEL" "$DEVICE_DST"; then
+    if ! mkfs.btrfs -f -L "$LABEL" "$DEVICE_DST"; then
         echo "abroot: failed to format $DEVICE_DST, cannot continue setup"
         umount "$MNT_SRC"
         return 1
