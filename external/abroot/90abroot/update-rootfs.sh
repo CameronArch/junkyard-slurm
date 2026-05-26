@@ -127,3 +127,6 @@ if needs_update; then
 else
     echo "abroot: no update required"
 fi
+
+umount "$MOUNT_SRC"
+umount "$MOUNT_DST"
